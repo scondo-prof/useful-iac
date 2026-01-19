@@ -1,3 +1,14 @@
+#https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/secretsmanager_secret#argument-reference
+resource "aws_secretsmanager_secret" "lambda_secret" {
+  name = "${var.environment}-${var.project}-secret"
+}
+
+#https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/secretsmanager_secret_version
+resource "aws_secretsmanager_secret_version" "lambda_secret" {
+  secret_id     = aws_secretsmanager_secret.lambda_secret.id
+  secret_string = jsonencode(var.lambda_secret_variables)
+}
+
 #https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/ecr_repository#argument-reference
 resource "aws_ecr_repository" "lambda_ecr_repository" {
   name                 = "${var.environment}-${var.project}-ecr-repo"
@@ -8,55 +19,50 @@ resource "aws_ecr_repository" "lambda_ecr_repository" {
   }
 }
 
-#https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/lambda_permission#argument-reference
-resource "aws_lambda_permission" "allow_cloudwatch" {
-  statement_id  = "AllowExecutionFromCloudWatch"
-  action        = "lambda:InvokeFunction"
-  function_name = aws_lambda_function.test_lambda.function_name
-  principal     = "events.amazonaws.com"
-  source_arn    = "arn:aws:events:eu-west-1:111122223333:rule/RunDaily"
-  qualifier     = aws_lambda_alias.test_alias.name
-}
-
-#https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/lambda_alias
-resource "aws_lambda_alias" "test_alias" {
-  name             = "testalias"
-  description      = "a sample description"
-  function_name    = aws_lambda_function.test_lambda.function_name
-  function_version = "$LATEST"
-}
-
-#https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/lambda_function#argument-reference
-resource "aws_lambda_function" "test_lambda" {
-  
-  function_name = "${var.environment}-${var.project}-lambda"
-  role          = aws_iam_role.iam_for_lambda.arn
-  image_uri     = "${aws_ecr_repository.lambda_ecr_repository.repository_url}:${var.image_tag}"
-  package_type  = "Image"
-  architectures = ["x86_64"]
-  timeout       = 300
-  memory_size   = 1024
-  environment {
-    variables = var.environment_variables
-  }
-}
-
 #https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document#argument-reference
-data "aws_iam_policy_document" "lambda_policy" {
+# IAM policy document for Lambda execution role - allows Lambda service to assume this role
+data "aws_iam_policy_document" "lambda_assume_role_policy" {
   statement {
-    actions = ["lambda:InvokeFunction"]
-    resources = [aws_lambda_function.test_lambda.arn]
+    actions = ["sts:AssumeRole"]
     principals {
-      type = "Service"
-      identifiers = ["events.amazonaws.com"]
+      type        = "Service"
+      identifiers = ["lambda.amazonaws.com"]
     }
   }
 }
 
 #https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role#argument-reference
 resource "aws_iam_role" "iam_for_lambda" {
-  name = "iam_for_lambda"
-  assume_role_policy = data.aws_iam_policy_document.lambda_policy.json
+  name               = "${var.environment}-${var.project}-lambda-role"
+  assume_role_policy = data.aws_iam_policy_document.lambda_assume_role_policy.json
 }
 
+#https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/lambda_function#argument-reference
+resource "aws_lambda_function" "lambda_function" {
+  
+  function_name = "${var.environment}-${var.project}-lambda"
+  role          = aws_iam_role.iam_for_lambda.arn
+  image_uri     = "${aws_ecr_repository.lambda_ecr_repository.repository_url}:${var.ecr_image_tag}"
+  package_type  = "Image"
+  architectures = ["x86_64"]
+  timeout       = 300
+  memory_size   = 1024
+  environment {
+    variables = merge(
+      {
+        "SECRET_ARN" = aws_secretsmanager_secret.lambda_secret.arn
+      },
+      var.environment_variables
+    )
+  }
+}
+
+#https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/lambda_permission#argument-reference
+resource "aws_lambda_permission" "allow_cloudwatch" {
+  statement_id  = "AllowExecutionFromCloudWatch"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.lambda_function.function_name
+  principal     = "events.amazonaws.com"
+  source_arn    = aws_cloudwatch_event_rule.lambda_event_rule.arn
+}
 
