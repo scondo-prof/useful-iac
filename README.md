@@ -6,7 +6,7 @@ A repository dedicated to reusable, remotely-referenced Terraform modules. These
 
 ```
 module_name/
-├── main.tf        # Core resource definitions
+├── *.tf           # Resource definitions (organized by resource type)
 ├── variables.tf   # Input variable declarations
 └── outputs.tf     # Output value declarations
 ```
@@ -15,30 +15,9 @@ module_name/
 
 ### eventbridge_trigger_ecr_container_lambda
 
-Creates an AWS Lambda function using a container image from ECR, triggered by an EventBridge (CloudWatch Events) schedule. This module is useful for running scheduled containerized workloads.
+Creates infrastructure for an AWS Lambda function using a container image from ECR, with EventBridge (CloudWatch Events) integration.
 
-**Features:**
-- Lambda function deployed from ECR container image
-- EventBridge rule for cron/rate-based scheduling
-- Configurable IAM permissions via additional policy attachments
-- CloudWatch log group with configurable retention
-
-**Usage:**
-
-```hcl
-module "scheduled_lambda" {
-  source = "git::https://github.com/your-org/useful-iac.git//eventbridge_trigger_ecr_container_lambda?ref=main"
-
-  function_name       = "my-scheduled-task"
-  ecr_repository_url  = "123456789012.dkr.ecr.us-east-1.amazonaws.com/my-repo"
-  image_tag           = "latest"
-  schedule_expression = "rate(1 hour)"
-  
-  environment_variables = {
-    LOG_LEVEL = "INFO"
-  }
-}
-```
+See [eventbridge_trigger_ecr_container_lambda/README.md](eventbridge_trigger_ecr_container_lambda/README.md) for detailed documentation.
 
 ## Example: Remote Repository Setup
 
