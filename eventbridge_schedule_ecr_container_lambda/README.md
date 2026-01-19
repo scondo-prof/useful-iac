@@ -1,12 +1,12 @@
-# eventbridge_trigger_ecr_container_lambda
+# eventbridge_schedule_ecr_container_lambda
 
 Creates infrastructure for an AWS Lambda function using a container image from ECR, with EventBridge (CloudWatch Events) integration for scheduled execution.
 
 ## File Structure
 
 ```
-eventbridge_trigger_ecr_container_lambda/
-├── lambda.tf      # ECR repository, Secrets Manager secret, Lambda function, permission, and IAM role
+eventbridge_schedule_ecr_container_lambda/
+├── lambda.tf      # ECR repository, Secrets Manager secret, Lambda function, permission, and IAM role/policy
 ├── cloudwatch.tf  # CloudWatch Log Group and EventBridge rule/target
 ├── variables.tf   # Input variables
 └── outputs.tf     # Output values
@@ -20,8 +20,10 @@ eventbridge_trigger_ecr_container_lambda/
 - `aws_lambda_function` - Lambda function using container image from ECR
 - `aws_lambda_permission` - Permission for EventBridge to invoke Lambda
 - `aws_iam_role` - IAM execution role for Lambda (allows Lambda service to assume the role)
-- `aws_iam_policy_document` - Policy document allowing Lambda service to assume the execution role
-- `aws_cloudwatch_log_group` - Log group for Lambda function logs (30 day retention)
+- `aws_iam_role_policy` - Inline IAM policy attached to the Lambda role for CloudWatch Logs and Secrets Manager access
+- `aws_iam_policy_document` (assume_role_policy) - Policy document allowing Lambda service to assume the execution role
+- `aws_iam_policy_document` (execution_policy) - Policy document granting CloudWatch Logs and Secrets Manager permissions
+- `aws_cloudwatch_log_group` - Log group for Lambda function logs (configurable retention)
 - `aws_cloudwatch_event_rule` - EventBridge rule with cron schedule expression
 - `aws_cloudwatch_event_target` - EventBridge target linking the rule to the Lambda function
 
@@ -31,15 +33,23 @@ eventbridge_trigger_ecr_container_lambda/
 |------|------|-------------|---------|
 | `environment` | `string` | The environment to deploy the resources to. This will be passed via CI Variables. | - |
 | `project` | `string` | The project name. | - |
+| `lambda_secret_recovery_window_in_days` | `number` | The recovery window in days for the Secrets Manager secret. | `0` |
+| `lambda_log_group_retention_in_days` | `number` | The retention in days for the CloudWatch log group. | `7` |
 | `lambda_event_rule_cron` | `string` | The cron expression to trigger the Lambda function. | `"0 1 * * ? *"` |
 | `lambda_secret_variables` | `map(string)` | The secret variables to pass to the Lambda function. | `{}` |
+| `lambda_ecr_image_tag_mutability` | `string` | The image tag mutability for the ECR repository. | `"MUTABLE"` |
 | `ecr_image_tag` | `string` | The tag of the ECR image to deploy. This will be passed via CI Variables. | - |
 | `environment_variables` | `map(string)` | The environment variables to pass to the Lambda function. | `{}` |
+| `lambda_memory_size` | `number` | The memory size for the Lambda function in MB. | `1024` |
+| `lambda_reserved_concurrent_executions` | `number` | The reserved concurrent executions for the Lambda function. Use -1 for unlimited. | `-1` |
+| `lambda_timeout` | `number` | The timeout for the Lambda function in seconds. | `300` |
 
 ## Usage
 
 The Lambda function is configured with:
-- Container image from ECR
+- Container image from ECR with configurable image tag mutability
 - Environment variable `SECRET_ARN` pointing to the Secrets Manager secret ARN
-- Scheduled execution via EventBridge using a cron expression
-- CloudWatch Logs with 30-day retention
+- Scheduled execution via EventBridge using a configurable cron expression
+- CloudWatch Logs with configurable retention period
+- IAM role with permissions for CloudWatch Logs (create log group, create log stream, put log events) and Secrets Manager (get secret value)
+- Configurable memory size, timeout, and reserved concurrent executions
