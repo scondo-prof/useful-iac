@@ -44,6 +44,27 @@ eventbridge_schedule_ecr_container_lambda/
 | `lambda_reserved_concurrent_executions` | `number` | The reserved concurrent executions for the Lambda function. Use -1 for unlimited. | `-1` |
 | `lambda_timeout` | `number` | The timeout for the Lambda function in seconds. | `300` |
 
+## Outputs
+
+| Name | Description |
+|------|-------------|
+| `lambda_function_name` | The name of the Lambda function |
+| `lambda_function_arn` | The ARN of the Lambda function |
+| `lambda_function_invoke_arn` | The ARN to be used for invoking Lambda function from API Gateway |
+| `lambda_function_qualified_arn` | The qualified ARN (ARN with lambda version number) of the Lambda function |
+| `lambda_function_version` | The version of the Lambda function |
+| `ecr_repository_url` | The URL of the ECR repository |
+| `ecr_repository_arn` | The ARN of the ECR repository |
+| `ecr_repository_name` | The name of the ECR repository |
+| `lambda_secret_arn` | The ARN of the Secrets Manager secret |
+| `lambda_secret_name` | The name of the Secrets Manager secret |
+| `lambda_role_arn` | The ARN of the IAM role for the Lambda function |
+| `lambda_role_name` | The name of the IAM role for the Lambda function |
+| `lambda_log_group_name` | The name of the CloudWatch log group for the Lambda function |
+| `lambda_log_group_arn` | The ARN of the CloudWatch log group for the Lambda function |
+| `eventbridge_rule_arn` | The ARN of the EventBridge rule |
+| `eventbridge_rule_name` | The name of the EventBridge rule |
+
 ## Usage
 
 The Lambda function is configured with:
