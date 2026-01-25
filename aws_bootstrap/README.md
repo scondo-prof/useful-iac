@@ -13,7 +13,6 @@ The bootstrap module serves as the foundation layer for environment setup, creat
 
 ```
 aws_bootstrap/
-├── main.tf      # Provider configuration and Terraform backend setup
 ├── variables.tf # Input variable declarations
 ├── outputs.tf   # Output value declarations (exposed to other modules via remote state)
 ├── locals.tf    # Local values for common naming patterns and configurations
@@ -25,10 +24,11 @@ aws_bootstrap/
 
 ### ECR Repositories
 
-The module currently creates ECR repositories for container image storage. These repositories are configured with:
+The module creates multiple ECR repositories based on the `ecr_repository_names` variable. These repositories are configured with:
 - Image scanning on push enabled for security
+- AES256 encryption at rest
 - Configurable image tag mutability (MUTABLE or IMMUTABLE)
-- Standardized naming convention: `{environment}-{project}-ecr-repo`
+- Standardized naming convention: `{environment}-{project}-{repository_name}`
 
 ## Module Structure
 
@@ -36,7 +36,6 @@ The module follows a resource-type organization pattern:
 - **Resource-specific files** (e.g., `ecr.tf`): Contains all resources of a specific type, making it easy to find and manage related infrastructure
 - **Common configuration** (`locals.tf`): Centralizes naming conventions and shared values
 - **Interface** (`variables.tf`, `outputs.tf`): Defines the module's inputs and outputs
-- **Provider setup** (`main.tf`): Configures the AWS provider and Terraform backend
 
 This structure allows for easy extension as new resource types are added to the bootstrap module. Simply create a new `.tf` file for the resource type (e.g., `s3.tf` for S3 buckets, `vpc.tf` for VPC resources).
 
@@ -56,9 +55,16 @@ data "terraform_remote_state" "bootstrap" {
   }
 }
 
-# Use ECR repository URL from bootstrap
+# Use ECR repository URL from bootstrap (outputs are lists, access by index)
 resource "aws_lambda_function" "example" {
-  image_uri = "${data.terraform_remote_state.bootstrap.outputs.ecr_repository_url}:latest"
+  image_uri = "${data.terraform_remote_state.bootstrap.outputs.ecr_repository_urls[0]}:latest"
+  # ... other configuration
+}
+
+# Or iterate over multiple repositories
+resource "aws_lambda_function" "example_multiple" {
+  for_each = toset(data.terraform_remote_state.bootstrap.outputs.ecr_repository_urls)
+  image_uri = "${each.value}:latest"
   # ... other configuration
 }
 ```
@@ -69,16 +75,16 @@ resource "aws_lambda_function" "example" {
 |------|------|-------------|---------|
 | `environment` | `string` | The environment name (e.g., dev, staging, prod) | - |
 | `project` | `string` | The project name | - |
-| `aws_region` | `string` | The AWS region to deploy the bootstrap resources to | `"us-east-1"` |
 | `ecr_image_tag_mutability` | `string` | Image tag mutability for ECR repository (MUTABLE or IMMUTABLE) | `"MUTABLE"` |
+| `ecr_repository_names` | `list(string)` | List of ECR repository names to create. Each name will be prefixed with '{environment}-{project}-' | `[]` |
 
 ## Outputs
 
-| Name | Description |
-|------|-------------|
-| `ecr_repository_url` | The URL of the ECR repository (used by other modules to reference container images) |
-| `ecr_repository_arn` | The ARN of the ECR repository |
-| `ecr_repository_name` | The name of the ECR repository |
+| Name | Type | Description |
+|------|------|-------------|
+| `ecr_repository_urls` | `list(string)` | List of ECR repository URLs (used by other modules to reference container images). Order matches `ecr_repository_names` input. |
+| `ecr_repository_arns` | `list(string)` | List of ECR repository ARNs. Order matches `ecr_repository_names` input. |
+| `ecr_repository_names` | `list(string)` | List of ECR repository names. Order matches `ecr_repository_names` input. |
 
 ## Future Enhancements
 

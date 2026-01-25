@@ -8,12 +8,6 @@ variable "project" {
   description = "The project name. Used for resource naming and tagging."
 }
 
-variable "aws_region" {
-  type        = string
-  description = "The AWS region to deploy the bootstrap resources to."
-  default     = "us-east-1"
-}
-
 variable "ecr_image_tag_mutability" {
   type        = string
   description = "Image tag mutability for the ECR repository. Valid values: MUTABLE or IMMUTABLE."
@@ -22,4 +16,10 @@ variable "ecr_image_tag_mutability" {
     condition     = contains(["MUTABLE", "IMMUTABLE"], var.ecr_image_tag_mutability)
     error_message = "ecr_image_tag_mutability must be either MUTABLE or IMMUTABLE."
   }
+}
+
+variable "ecr_repository_names" {
+  type        = list(string)
+  description = "List of ECR repository names to create. Each name will be prefixed with '{environment}-{project}-'."
+  default     = []
 }
