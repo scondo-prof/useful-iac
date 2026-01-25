@@ -66,3 +66,18 @@ variable "lambda_timeout" {
   description = "The timeout for the Lambda function."
   default     = 300
 }
+
+variable "bootstrap_s3_bucket" {
+  type        = string
+  description = "The S3 bucket name where the bootstrap Terraform state is stored."
+}
+
+variable "bootstrap_s3_key" {
+  type        = string
+  description = "The S3 key (path) where the bootstrap Terraform state is stored."
+}
+
+variable "bootstrap_aws_region" {
+  type        = string
+  description = "The AWS region where the bootstrap Terraform state S3 bucket is located."
+}

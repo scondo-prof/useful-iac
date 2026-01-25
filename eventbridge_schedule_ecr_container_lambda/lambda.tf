@@ -10,13 +10,22 @@ resource "aws_secretsmanager_secret_version" "lambda_secret" {
   secret_string = jsonencode(var.lambda_secret_variables)
 }
 
-#https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/ecr_repository#argument-reference
-resource "aws_ecr_repository" "lambda_ecr_repository" {
-  image_scanning_configuration {
-    scan_on_push = true
+# #https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/ecr_repository#argument-reference
+# resource "aws_ecr_repository" "lambda_ecr_repository" {
+#   image_scanning_configuration {
+#     scan_on_push = true
+#   }
+#   image_tag_mutability = var.lambda_ecr_image_tag_mutability
+#   name                 = "${var.environment}-${var.project}-ecr-repo"
+# }
+
+data "terraform_remote_state" "bootstrap" {
+  backend = "s3"
+  config = {
+    bucket = var.bootstrap_s3_bucket
+    key    = var.bootstrap_s3_key
+    region = var.bootstrap_aws_region
   }
-  image_tag_mutability = var.lambda_ecr_image_tag_mutability
-  name                 = "${var.environment}-${var.project}-ecr-repo"
 }
 
 #https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document#argument-reference
@@ -73,7 +82,7 @@ resource "aws_lambda_function" "lambda_function" {
     )
   }
   function_name                  = "${var.environment}-${var.project}-lambda"
-  image_uri                      = "${aws_ecr_repository.lambda_ecr_repository.repository_url}:${var.ecr_image_tag}"
+  image_uri                      = "${data.terraform_remote_state.bootstrap.outputs.ecr_repository_url}:${var.ecr_image_tag}"
   memory_size                    = var.lambda_memory_size
   package_type                   = "Image"
   reserved_concurrent_executions = var.lambda_reserved_concurrent_executions
