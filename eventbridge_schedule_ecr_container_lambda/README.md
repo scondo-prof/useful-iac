@@ -6,7 +6,7 @@ Creates infrastructure for an AWS Lambda function using a container image from E
 
 ```
 eventbridge_schedule_ecr_container_lambda/
-├── lambda.tf      # ECR repository, Secrets Manager secret, Lambda function, permission, and IAM role/policy
+├── lambda.tf      # Secrets Manager secret, Lambda function, permission, and IAM role/policy
 ├── cloudwatch.tf  # CloudWatch Log Group and EventBridge rule/target
 ├── variables.tf   # Input variables
 └── outputs.tf     # Output values
@@ -16,8 +16,7 @@ eventbridge_schedule_ecr_container_lambda/
 
 - `aws_secretsmanager_secret` - Secrets Manager secret for storing Lambda function secrets
 - `aws_secretsmanager_secret_version` - Secret version containing the secret variables
-- `terraform_remote_state` (bootstrap) - Data source to fetch ECR repository URL from bootstrap Terraform state
-- `aws_lambda_function` - Lambda function using container image from ECR (repository URL from bootstrap state)
+- `aws_lambda_function` - Lambda function using container image from ECR (repository URL provided via variable)
 - `aws_lambda_permission` - Permission for EventBridge to invoke Lambda
 - `aws_iam_role` - IAM execution role for Lambda (allows Lambda service to assume the role)
 - `aws_iam_role_policy` - Inline IAM policy attached to the Lambda role for CloudWatch Logs and Secrets Manager access
@@ -37,15 +36,12 @@ eventbridge_schedule_ecr_container_lambda/
 | `lambda_log_group_retention_in_days` | `number` | The retention in days for the CloudWatch log group. | `7` |
 | `lambda_event_rule_cron` | `string` | The cron expression to trigger the Lambda function. | `"0 1 * * ? *"` |
 | `lambda_secret_variables` | `map(string)` | The secret variables to pass to the Lambda function. | `{}` |
-| `lambda_ecr_image_tag_mutability` | `string` | The image tag mutability for the ECR repository. | `"MUTABLE"` |
+| `ecr_repository_url` | `string` | The URL of the ECR repository where the container image is stored. | - |
 | `ecr_image_tag` | `string` | The tag of the ECR image to deploy. This will be passed via CI Variables. | - |
 | `environment_variables` | `map(string)` | The environment variables to pass to the Lambda function. | `{}` |
 | `lambda_memory_size` | `number` | The memory size for the Lambda function in MB. | `1024` |
 | `lambda_reserved_concurrent_executions` | `number` | The reserved concurrent executions for the Lambda function. Use -1 for unlimited. | `-1` |
 | `lambda_timeout` | `number` | The timeout for the Lambda function in seconds. | `300` |
-| `bootstrap_s3_bucket` | `string` | The S3 bucket name where the bootstrap Terraform state is stored. | - |
-| `bootstrap_s3_key` | `string` | The S3 key (path) where the bootstrap Terraform state is stored. | - |
-| `bootstrap_aws_region` | `string` | The AWS region where the bootstrap Terraform state S3 bucket is located. | - |
 
 ## Outputs
 
@@ -56,7 +52,6 @@ eventbridge_schedule_ecr_container_lambda/
 | `lambda_function_invoke_arn` | The ARN to be used for invoking Lambda function from API Gateway |
 | `lambda_function_qualified_arn` | The qualified ARN (ARN with lambda version number) of the Lambda function |
 | `lambda_function_version` | The version of the Lambda function |
-| `ecr_repository_url` | The URL of the ECR repository from bootstrap state |
 | `lambda_secret_arn` | The ARN of the Secrets Manager secret |
 | `lambda_secret_name` | The name of the Secrets Manager secret |
 | `lambda_role_arn` | The ARN of the IAM role for the Lambda function |
@@ -69,11 +64,11 @@ eventbridge_schedule_ecr_container_lambda/
 ## Usage
 
 The Lambda function is configured with:
-- Container image from ECR repository retrieved from bootstrap Terraform state (ECR repository must be created separately in bootstrap infrastructure)
+- Container image from ECR repository (URL provided via `ecr_repository_url` variable)
 - Environment variable `SECRET_ARN` pointing to the Secrets Manager secret ARN
 - Scheduled execution via EventBridge using a configurable cron expression
 - CloudWatch Logs with configurable retention period
 - IAM role with permissions for CloudWatch Logs (create log group, create log stream, put log events) and Secrets Manager (get secret value)
 - Configurable memory size, timeout, and reserved concurrent executions
 
-**Note:** This module expects the ECR repository to be created in a separate bootstrap Terraform configuration. The module fetches the ECR repository URL from the bootstrap state using `terraform_remote_state` data source. Ensure the bootstrap state contains an output named `ecr_repository_url`.
+**Note:** The ECR repository must be created separately (e.g., via the `aws_bootstrap` module or manually). The repository URL is passed directly to this module via the `ecr_repository_url` variable, providing flexibility in how the repository is managed.
