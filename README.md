@@ -17,13 +17,26 @@ module_name/
 
 Creates foundational AWS infrastructure shared across applications (e.g., ECR repositories). Typically deployed first; other modules reference its outputs via remote state.
 
+**Current version:** `bootstrap-v1.0.0`
+
 See [aws_bootstrap/README.md](aws_bootstrap/README.md) for detailed documentation.
 
 ### eventbridge_schedule_ecr_container_lambda
 
 Creates an AWS Lambda function using a container image from ECR, with EventBridge schedule trigger and Secrets Manager integration.
 
+**Current version:** `event-container-lambda-v1.0.0`
+
 See [eventbridge_schedule_ecr_container_lambda/README.md](eventbridge_schedule_ecr_container_lambda/README.md) for detailed documentation.
+
+### All versions
+
+| Module | Tag |
+|--------|-----|
+| aws_bootstrap | `bootstrap-v1.0.0` |
+| eventbridge_schedule_ecr_container_lambda | `event-container-lambda-v1.0.0` |
+
+Use the tag in the `ref` parameter when sourcing a module, e.g. `?ref=bootstrap-v1.0.0` or `?ref=event-container-lambda-v1.0.0`.
 
 ## Example: Remote Repository Setup
 
