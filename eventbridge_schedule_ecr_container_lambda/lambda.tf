@@ -29,7 +29,7 @@ data "aws_iam_policy_document" "lambda_execution_policy" {
       "logs:CreateLogStream",
       "logs:PutLogEvents"
     ]
-    resources = [aws_cloudwatch_log_group.lambda_log_group.arn]
+    resources = [aws_cloudwatch_log_group.lambda_log_group.arn, "${aws_cloudwatch_log_group.lambda_log_group.arn}:*"]
   }
   statement {
     actions   = ["secretsmanager:GetSecretValue"]
