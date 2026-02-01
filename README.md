@@ -17,7 +17,7 @@ module_name/
 
 Creates foundational AWS infrastructure shared across applications (e.g., ECR repositories). Typically deployed first; other modules reference its outputs via remote state.
 
-**Current version:** `bootstrap-v1.0.0`
+**Current version:** `bootstrap-v1.0.0` [`Ref`](https://github.com/scondo-prof/useful-iac/tree/2a63c432d1479a9cb2978a477149ff815938251c/aws_bootstrap)
 
 See [aws_bootstrap/README.md](aws_bootstrap/README.md) for detailed documentation.
 
@@ -25,16 +25,16 @@ See [aws_bootstrap/README.md](aws_bootstrap/README.md) for detailed documentatio
 
 Creates an AWS Lambda function using a container image from ECR, with EventBridge schedule trigger and Secrets Manager integration.
 
-**Current version:** `event-container-lambda-v1.0.0`
+**Current version:** `event-container-lambda-v1.0.0` [`Ref`](https://github.com/scondo-prof/useful-iac/tree/2a63c432d1479a9cb2978a477149ff815938251c/eventbridge_schedule_ecr_container_lambda)
 
 See [eventbridge_schedule_ecr_container_lambda/README.md](eventbridge_schedule_ecr_container_lambda/README.md) for detailed documentation.
 
 ### All versions
 
-| Module | Tag |
-|--------|-----|
-| aws_bootstrap | `bootstrap-v1.0.0` |
-| eventbridge_schedule_ecr_container_lambda | `event-container-lambda-v1.0.0` |
+| Module                                    | Tag                             | Link                                                                                                                                       |
+| ----------------------------------------- | ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| aws_bootstrap                             | `bootstrap-v1.0.0`              | [Ref](https://github.com/scondo-prof/useful-iac/tree/2a63c432d1479a9cb2978a477149ff815938251c/aws_bootstrap)                             |
+| eventbridge_schedule_ecr_container_lambda | `event-container-lambda-v1.0.0` | [Ref](https://github.com/scondo-prof/useful-iac/tree/2a63c432d1479a9cb2978a477149ff815938251c/eventbridge_schedule_ecr_container_lambda) |
 
 Use the tag in the `ref` parameter when sourcing a module, e.g. `?ref=bootstrap-v1.0.0` or `?ref=event-container-lambda-v1.0.0`.
 
@@ -78,12 +78,13 @@ Reference modules directly from this repository in your Terraform configurations
 ```hcl
 module "example" {
   source = "git::https://github.com/your-org/useful-iac.git//module_name?ref=v1.0.0"
-  
+
   # Module variables...
 }
 ```
 
 **Best Practices:**
+
 - Always pin to a specific Git ref (tag or commit SHA) for production use
 - Use semantic versioning tags for stable releases
 - Review module changes before updating refs in consuming repositories

@@ -13,11 +13,11 @@ The bootstrap module serves as the foundation layer for environment setup, creat
 
 ```
 aws_bootstrap/
-├── variables.tf # Input variable declarations
-├── outputs.tf   # Output value declarations (exposed to other modules via remote state)
-├── locals.tf    # Local values for common naming patterns and configurations
-├── ecr.tf       # ECR repository resources
-└── README.md    # This file
+├── variables.tf   # Input variable declarations
+├── outputs.tf     # Output value declarations (exposed to other modules via remote state)
+├── locals.tf      # Local values for common naming patterns and configurations
+├── ecr.tf         # ECR repository resources
+└── README.md      # This file
 ```
 
 ## Current Resources
