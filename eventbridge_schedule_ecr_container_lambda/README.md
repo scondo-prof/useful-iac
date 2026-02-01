@@ -33,6 +33,7 @@ eventbridge_schedule_ecr_container_lambda/
 |------|------|-------------|---------|
 | `environment` | `string` | The environment to deploy the resources to. This will be passed via CI Variables. | - |
 | `project` | `string` | The project name. | - |
+| `name_suffix` | `string` | Optional suffix for resource names. When set, names use `{project}-{name_suffix}-`; otherwise `{project}-`. | `""` |
 | `lambda_secret_recovery_window_in_days` | `number` | The recovery window in days for the Secrets Manager secret. | `0` |
 | `lambda_log_group_retention_in_days` | `number` | The retention in days for the CloudWatch log group. | `7` |
 | `lambda_event_rule_cron` | `string` | The cron expression to trigger the Lambda function. | `"0 1 * * ? *"` |

@@ -8,6 +8,12 @@ variable "project" {
   description = "The project name."
 }
 
+variable "name_suffix" {
+  type        = string
+  description = "The suffix to add to the resource names."
+  default     = ""
+}
+
 variable "lambda_secret_recovery_window_in_days" {
   type        = number
   description = "The recovery window in days for the Secrets Manager secret."
