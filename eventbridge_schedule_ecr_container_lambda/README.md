@@ -8,6 +8,7 @@ Creates infrastructure for an AWS Lambda function using a container image from E
 eventbridge_schedule_ecr_container_lambda/
 ├── lambda.tf      # Secrets Manager secret, Lambda function, permission, and IAM role/policy
 ├── cloudwatch.tf  # CloudWatch Log Group and EventBridge rule/target
+├── locals.tf      # Local values for naming (e.g., name_prefix)
 ├── variables.tf   # Input variables
 └── outputs.tf     # Output values
 ```

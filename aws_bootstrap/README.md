@@ -28,7 +28,7 @@ The module creates multiple ECR repositories based on the `ecr_repository_names`
 - Image scanning on push enabled for security
 - AES256 encryption at rest
 - Configurable image tag mutability (MUTABLE or IMMUTABLE)
-- Standardized naming convention: `{environment}-{project}-{repository_name}`
+- Standardized naming convention: `{project}-bootstrap-{repository_name}`
 
 ## Module Structure
 
@@ -76,7 +76,7 @@ resource "aws_lambda_function" "example_multiple" {
 | `environment` | `string` | The environment name (e.g., dev, staging, prod) | - |
 | `project` | `string` | The project name | - |
 | `ecr_image_tag_mutability` | `string` | Image tag mutability for ECR repository (MUTABLE or IMMUTABLE) | `"MUTABLE"` |
-| `ecr_repository_names` | `list(string)` | List of ECR repository names to create. Each name will be prefixed with '{environment}-{project}-' | `[]` |
+| `ecr_repository_names` | `list(string)` | List of ECR repository names to create. Each name will be prefixed with '{project}-bootstrap-' | `[]` |
 
 ## Outputs
 

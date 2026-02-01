@@ -13,11 +13,17 @@ module_name/
 
 ## Available Modules
 
-### eventbridge_trigger_ecr_container_lambda
+### aws_bootstrap
 
-Creates infrastructure for an AWS Lambda function using a container image from ECR, with EventBridge (CloudWatch Events) integration.
+Creates foundational AWS infrastructure shared across applications (e.g., ECR repositories). Typically deployed first; other modules reference its outputs via remote state.
 
-See [eventbridge_trigger_ecr_container_lambda/README.md](eventbridge_trigger_ecr_container_lambda/README.md) for detailed documentation.
+See [aws_bootstrap/README.md](aws_bootstrap/README.md) for detailed documentation.
+
+### eventbridge_schedule_ecr_container_lambda
+
+Creates an AWS Lambda function using a container image from ECR, with EventBridge schedule trigger and Secrets Manager integration.
+
+See [eventbridge_schedule_ecr_container_lambda/README.md](eventbridge_schedule_ecr_container_lambda/README.md) for detailed documentation.
 
 ## Example: Remote Repository Setup
 

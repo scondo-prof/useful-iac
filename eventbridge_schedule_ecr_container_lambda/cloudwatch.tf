@@ -1,6 +1,6 @@
 #https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudwatch_event_rule#argument-reference
 resource "aws_cloudwatch_event_rule" "lambda_event_rule" {
-  name        = "${var.environment}-${var.project}-lambda-event-rule"
+  name        = "${local.name_prefix}lambda-event-rule"
   description = "Capture each Lambda function invocation"
 
   schedule_expression = "cron(${var.lambda_event_rule_cron})"
@@ -8,7 +8,7 @@ resource "aws_cloudwatch_event_rule" "lambda_event_rule" {
 
 #https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudwatch_log_group#argument-reference
 resource "aws_cloudwatch_log_group" "lambda_log_group" {
-  name              = "/aws/lambda/${var.environment}-${var.project}-lambda"
+  name              = "/aws/lambda/${local.name_prefix}lambda"
   retention_in_days = var.lambda_log_group_retention_in_days
 }
 

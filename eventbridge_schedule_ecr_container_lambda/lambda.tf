@@ -1,6 +1,6 @@
 #https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/secretsmanager_secret#argument-reference
 resource "aws_secretsmanager_secret" "lambda_secret" {
-  name = "${var.environment}-${var.project}-secret"
+  name = "${local.name_prefix}secret"
   recovery_window_in_days = var.lambda_secret_recovery_window_in_days
 }
 
@@ -41,12 +41,12 @@ data "aws_iam_policy_document" "lambda_execution_policy" {
 #https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role#argument-reference
 resource "aws_iam_role" "iam_for_lambda" {
   assume_role_policy = data.aws_iam_policy_document.lambda_assume_role_policy.json
-  name               = "${var.environment}-${var.project}-lambda-role"
+  name               = "${local.name_prefix}lambda-role"
 }
 
 #https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy#argument-reference
 resource "aws_iam_role_policy" "lambda_execution_policy" {
-  name   = "${var.environment}-${var.project}-lambda-execution-policy"
+  name   = "${local.name_prefix}lambda-execution-policy"
   role   = aws_iam_role.iam_for_lambda.id
   policy = data.aws_iam_policy_document.lambda_execution_policy.json
 }
@@ -63,7 +63,7 @@ resource "aws_lambda_function" "lambda_function" {
       var.environment_variables
     )
   }
-  function_name                  = "${var.environment}-${var.project}-lambda"
+  function_name                  = "${local.name_prefix}lambda"
   image_uri                      = "${var.ecr_repository_url}:${var.ecr_image_tag}"
   memory_size                    = var.lambda_memory_size
   package_type                   = "Image"
