@@ -3,7 +3,7 @@ terraform {
     aws = {
       source  = "hashicorp/aws"
       version = "~> 6.0"
-    }
+    }#test
   }
   required_version = ">= 1.0.0"
   backend "s3" {

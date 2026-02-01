@@ -24,12 +24,6 @@ output "lambda_function_version" {
   value       = aws_lambda_function.lambda_function.version
 }
 
-# ECR Repository Outputs (from bootstrap remote state)
-output "ecr_repository_url" {
-  description = "The URL of the ECR repository from bootstrap state"
-  value       = data.terraform_remote_state.bootstrap.outputs.ecr_repository_url
-}
-
 # Secrets Manager Outputs
 output "lambda_secret_arn" {
   description = "The ARN of the Secrets Manager secret"

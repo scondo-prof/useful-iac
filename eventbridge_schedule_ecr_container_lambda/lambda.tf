@@ -1,6 +1,6 @@
 #https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/secretsmanager_secret#argument-reference
 resource "aws_secretsmanager_secret" "lambda_secret" {
-  name = "${var.environment}-${var.project}-secret"
+  name                    = "${local.name_prefix}secret"
   recovery_window_in_days = var.lambda_secret_recovery_window_in_days
 }
 
@@ -8,24 +8,6 @@ resource "aws_secretsmanager_secret" "lambda_secret" {
 resource "aws_secretsmanager_secret_version" "lambda_secret" {
   secret_id     = aws_secretsmanager_secret.lambda_secret.id
   secret_string = jsonencode(var.lambda_secret_variables)
-}
-
-# #https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/ecr_repository#argument-reference
-# resource "aws_ecr_repository" "lambda_ecr_repository" {
-#   image_scanning_configuration {
-#     scan_on_push = true
-#   }
-#   image_tag_mutability = var.lambda_ecr_image_tag_mutability
-#   name                 = "${var.environment}-${var.project}-ecr-repo"
-# }
-
-data "terraform_remote_state" "bootstrap" {
-  backend = "s3"
-  config = {
-    bucket = var.bootstrap_s3_bucket
-    key    = var.bootstrap_s3_key
-    region = var.bootstrap_aws_region
-  }
 }
 
 #https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document#argument-reference
@@ -44,11 +26,10 @@ data "aws_iam_policy_document" "lambda_assume_role_policy" {
 data "aws_iam_policy_document" "lambda_execution_policy" {
   statement {
     actions = [
-      "logs:CreateLogGroup",
       "logs:CreateLogStream",
       "logs:PutLogEvents"
     ]
-    resources = [aws_cloudwatch_log_group.lambda_log_group.arn]
+    resources = [aws_cloudwatch_log_group.lambda_log_group.arn, "${aws_cloudwatch_log_group.lambda_log_group.arn}:*"]
   }
   statement {
     actions   = ["secretsmanager:GetSecretValue"]
@@ -59,12 +40,12 @@ data "aws_iam_policy_document" "lambda_execution_policy" {
 #https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role#argument-reference
 resource "aws_iam_role" "iam_for_lambda" {
   assume_role_policy = data.aws_iam_policy_document.lambda_assume_role_policy.json
-  name               = "${var.environment}-${var.project}-lambda-role"
+  name               = "${local.name_prefix}lambda-role"
 }
 
 #https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy#argument-reference
 resource "aws_iam_role_policy" "lambda_execution_policy" {
-  name   = "${var.environment}-${var.project}-lambda-execution-policy"
+  name   = "${local.name_prefix}lambda-execution-policy"
   role   = aws_iam_role.iam_for_lambda.id
   policy = data.aws_iam_policy_document.lambda_execution_policy.json
 }
@@ -81,8 +62,13 @@ resource "aws_lambda_function" "lambda_function" {
       var.environment_variables
     )
   }
-  function_name                  = "${var.environment}-${var.project}-lambda"
-  image_uri                      = "${data.terraform_remote_state.bootstrap.outputs.ecr_repository_url}:${var.ecr_image_tag}"
+  function_name = "${local.name_prefix}lambda"
+  image_uri     = "${var.ecr_repository_url}:${var.ecr_image_tag}"
+
+  logging_config {
+    log_format = "JSON"
+    log_group  = aws_cloudwatch_log_group.lambda_log_group.name
+  }
   memory_size                    = var.lambda_memory_size
   package_type                   = "Image"
   reserved_concurrent_executions = var.lambda_reserved_concurrent_executions

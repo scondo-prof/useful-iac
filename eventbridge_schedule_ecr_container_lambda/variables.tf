@@ -8,6 +8,12 @@ variable "project" {
   description = "The project name."
 }
 
+variable "name_suffix" {
+  type        = string
+  description = "The suffix to add to the resource names."
+  default     = ""
+}
+
 variable "lambda_secret_recovery_window_in_days" {
   type        = number
   description = "The recovery window in days for the Secrets Manager secret."
@@ -32,10 +38,9 @@ variable "lambda_secret_variables" {
   default     = {}
 }
 
-variable "lambda_ecr_image_tag_mutability" {
+variable "ecr_repository_url" {
   type        = string
-  description = "The image tag mutability for the ECR repository."
-  default     = "MUTABLE"
+  description = "The URL of the ECR repository where the container image is stored."
 }
 
 variable "ecr_image_tag" {
@@ -65,19 +70,4 @@ variable "lambda_timeout" {
   type        = number
   description = "The timeout for the Lambda function."
   default     = 300
-}
-
-variable "bootstrap_s3_bucket" {
-  type        = string
-  description = "The S3 bucket name where the bootstrap Terraform state is stored."
-}
-
-variable "bootstrap_s3_key" {
-  type        = string
-  description = "The S3 key (path) where the bootstrap Terraform state is stored."
-}
-
-variable "bootstrap_aws_region" {
-  type        = string
-  description = "The AWS region where the bootstrap Terraform state S3 bucket is located."
 }
