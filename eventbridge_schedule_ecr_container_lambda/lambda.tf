@@ -1,6 +1,6 @@
 #https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/secretsmanager_secret#argument-reference
 resource "aws_secretsmanager_secret" "lambda_secret" {
-  name = "${local.name_prefix}secret"
+  name                    = "${local.name_prefix}secret"
   recovery_window_in_days = var.lambda_secret_recovery_window_in_days
 }
 
@@ -26,7 +26,6 @@ data "aws_iam_policy_document" "lambda_assume_role_policy" {
 data "aws_iam_policy_document" "lambda_execution_policy" {
   statement {
     actions = [
-      "logs:CreateLogGroup",
       "logs:CreateLogStream",
       "logs:PutLogEvents"
     ]
@@ -63,8 +62,13 @@ resource "aws_lambda_function" "lambda_function" {
       var.environment_variables
     )
   }
-  function_name                  = "${local.name_prefix}lambda"
-  image_uri                      = "${var.ecr_repository_url}:${var.ecr_image_tag}"
+  function_name = "${local.name_prefix}lambda"
+  image_uri     = "${var.ecr_repository_url}:${var.ecr_image_tag}"
+
+  logging_config {
+    log_format = "JSON"
+    log_group  = aws_cloudwatch_log_group.lambda_log_group.name
+  }
   memory_size                    = var.lambda_memory_size
   package_type                   = "Image"
   reserved_concurrent_executions = var.lambda_reserved_concurrent_executions

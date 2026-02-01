@@ -70,7 +70,7 @@ The Lambda function is configured with:
 - Environment variable `SECRET_ARN` pointing to the Secrets Manager secret ARN
 - Scheduled execution via EventBridge using a configurable cron expression
 - CloudWatch Logs with configurable retention period
-- IAM role with permissions for CloudWatch Logs (create log group, create log stream, put log events) and Secrets Manager (get secret value)
+- IAM role with permissions for CloudWatch Logs (create log stream, put log events; log group is pre-created) and Secrets Manager (get secret value)
 - Configurable memory size, timeout, and reserved concurrent executions
 
 **Note:** The ECR repository must be created separately (e.g., via the `aws_bootstrap` module or manually). The repository URL is passed directly to this module via the `ecr_repository_url` variable, providing flexibility in how the repository is managed.
